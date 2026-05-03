@@ -15,6 +15,9 @@ Be factual, warm, and use one relevant emoji. Do NOT repeat the context word for
 
             const result = await geminiFlash.generateContent(prompt);
             return result.response.text();
+        } catch (err) {
+            console.error("Gemini narrate error:", err);
+            return "📖 " + stepContext; // Graceful fallback: show raw context
         } finally {
             setLoading(false);
         }
@@ -31,6 +34,9 @@ In 1-2 sentences, explain why "${correctAnswer}" is correct. Be concise and educ
 
             const result = await geminiFlash.generateContent(prompt);
             return result.response.text();
+        } catch (err) {
+            console.error("Gemini explainAnswer error:", err);
+            return `The correct answer is "${correctAnswer}".`; // Graceful fallback
         } finally {
             setLoading(false);
         }

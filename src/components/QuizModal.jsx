@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function QuizModal({ quiz, explainAnswer, onClose }) {
+export default function QuizModal({ quiz, explainAnswer, roleColor = "#6366f1", onClose }) {
     const [selected, setSelected] = useState(null);
     const [explanation, setExplanation] = useState("");
     const [loading, setLoading] = useState(false);
@@ -16,22 +16,54 @@ export default function QuizModal({ quiz, explainAnswer, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-            <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-gray-700 shadow-2xl">
-                <h3 className="text-lg font-semibold mb-4">🧠 {quiz.question}</h3>
-                <div className="space-y-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            style={{ background: "rgba(3,7,18,0.85)", backdropFilter: "blur(12px)" }}>
+
+            <div
+                className="relative w-full max-w-md rounded-2xl p-7 page-enter"
+                style={{
+                    background: "rgba(15,23,42,0.95)",
+                    border: "1px solid rgba(99,102,241,0.2)",
+                    boxShadow: "0 0 60px rgba(99,102,241,0.15), 0 25px 60px rgba(0,0,0,0.6)",
+                }}
+            >
+                {/* Header */}
+                <div className="mb-1">
+                    <span className="mono text-[10px] tracking-widest" style={{ color: roleColor }}>
+                        KNOWLEDGE CHECK
+                    </span>
+                </div>
+                <h3 className="text-base font-semibold text-white leading-snug mb-5">
+                    {quiz.question}
+                </h3>
+
+                {/* Options */}
+                <div className="space-y-2.5 mb-5">
                     {quiz.options.map((opt) => {
-                        let cls = "border border-gray-700 bg-gray-800 hover:bg-gray-700";
+                        let borderColor = "rgba(99,102,241,0.2)";
+                        let bg = "rgba(99,102,241,0.05)";
+                        let textColor = "#94a3b8";
+                        let opacity = "1";
+
                         if (selected) {
-                            if (opt === quiz.answer) cls = "border border-green-500 bg-green-900/40";
-                            else if (opt === selected) cls = "border border-red-500 bg-red-900/40";
-                            else cls = "border border-gray-700 bg-gray-800 opacity-50";
+                            if (opt === quiz.answer) {
+                                borderColor = "#10b981"; bg = "rgba(16,185,129,0.1)"; textColor = "#6ee7b7";
+                            } else if (opt === selected) {
+                                borderColor = "#ef4444"; bg = "rgba(239,68,68,0.1)"; textColor = "#fca5a5";
+                            } else {
+                                opacity = "0.4";
+                            }
                         }
+
                         return (
                             <button
                                 key={opt}
                                 onClick={() => handleSelect(opt)}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition text-sm ${cls}`}
+                                disabled={!!selected}
+                                className="w-full text-left px-4 py-3 rounded-xl text-sm transition-all duration-200 disabled:cursor-default"
+                                style={{ background: bg, border: `1px solid ${borderColor}`, color: textColor, opacity }}
+                                onMouseEnter={(e) => !selected && (e.currentTarget.style.background = "rgba(99,102,241,0.12)")}
+                                onMouseLeave={(e) => !selected && (e.currentTarget.style.background = bg)}
                             >
                                 {opt}
                             </button>
@@ -39,17 +71,36 @@ export default function QuizModal({ quiz, explainAnswer, onClose }) {
                     })}
                 </div>
 
-                {loading && <p className="text-gray-400 text-sm mb-3">Gemini is explaining...</p>}
+                {/* Explanation */}
+                {loading && (
+                    <div className="flex items-center gap-2 text-slate-400 text-xs mono tracking-wide mb-4">
+                        <div className="w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: roleColor, borderTopColor: "transparent" }} />
+                        GEMINI EXPLAINING...
+                    </div>
+                )}
                 {explanation && (
-                    <div className={`rounded-xl p-3 text-sm mb-4 ${correct ? "bg-green-900/30 text-green-300" : "bg-red-900/30 text-red-300"}`}>
-                        {correct ? "✅ " : "❌ "}{explanation}
+                    <div
+                        className="rounded-xl px-4 py-3 text-sm leading-relaxed mb-5"
+                        style={{
+                            background: correct ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)",
+                            border: `1px solid ${correct ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.25)"}`,
+                            color: correct ? "#6ee7b7" : "#fca5a5",
+                        }}
+                    >
+                        <span className="font-medium">{correct ? "✓ Correct — " : "✗ Incorrect — "}</span>
+                        {explanation}
                     </div>
                 )}
 
+                {/* Continue */}
                 {selected && !loading && (
                     <button
                         onClick={() => onClose(correct)}
-                        className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-semibold transition"
+                        className="w-full py-3 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:brightness-110"
+                        style={{
+                            background: `linear-gradient(135deg, ${roleColor}, #6366f1)`,
+                            boxShadow: `0 4px 20px ${roleColor}40`,
+                        }}
                     >
                         Continue →
                     </button>
